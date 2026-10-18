@@ -1,90 +1,356 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SDBH WEB</title>
-<style>
-body{background:#030712;color:#f3f4f6;font-family:sans-serif;text-align:center;margin:0;padding:12px}
-h1{color:#06b6d4;font-size:22px}
-.tabs{display:flex;justify-content:space-around;background:#111827;padding:8px;border-radius:18px}
-button{cursor:pointer;border:0;border-radius:12px;padding:12px;font-weight:bold}
-.tab{background:#374151;color:white}
-.active{background:#06b6d4;color:#000}
-.screen{display:none;margin-top:18px}
-.screen.active{display:block}
-.btn{background:linear-gradient(135deg,#f59e0b,#d97706);color:white;width:90%;margin:10px}
-.grid{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:15px}
-.card{width:90px;height:125px;border:2px solid white;border-radius:8px;padding:6px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;font-size:13px;font-weight:bold}
-.hr{background:linear-gradient(#ef4444,#7f1d1d)}
-.el{background:linear-gradient(#3b82f6,#1e3a8a)}
-.bs{background:linear-gradient(#a855f7,#581c87)}
-.info{background:#111827;padding:12px;border-radius:12px;margin-top:15px}
-</style>
-</head>
-<body>
-<h1>SUPER DRAGON BALL HEROES</h1>
-<div class="tabs">
-<button class="tab active" onclick="nav('gacha',this)">💳 ガチャ</button>
-<button class="tab" onclick="nav('deck',this)">🎒 カード</button>
-<button class="tab" onclick="nav('battle',this)">⚔️ バトル</button>
-</div>
-<section id="gacha" class="screen active">
-<h3>💎 ダイヤ：<span id="dia">150</span></h3>
-<button class="btn" onclick="roll()">スカウトを引く（💎50）</button>
-<div id="result" class="info">ガチャを引いてカードを集めよう！</div>
-</section>
-<section id="deck" class="screen">
-<h3>🎒 所持カード</h3>
-<div id="cards" class="grid"></div>
-</section>
-<section id="battle" class="screen">
-<h3>⚔️ バトル</h3>
-<div class="info" id="log">カードを集めてバトルしよう！</div>
-<button class="btn" onclick="battle()">バトル開始！</button>
-</section>
-<script>
-const all=[
-{name:"孫悟空",type:"HR",rarity:"C",cls:"hr",power:100},
-{name:"ベジータ",type:"EL",rarity:"C",cls:"el",power:120},
-{name:"トランクス",type:"BS",rarity:"C",cls:"bs",power:110},
-{name:"ベジット",type:"BS",rarity:"SEC",cls:"bs",power:500},
-{name:"ゴジータ",type:"HR",rarity:"SEC",cls:"hr",power:550}
-];
-let dia=150,owned=[],team=[];
-function nav(id,button){
-document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
-document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-document.getElementById(id).classList.add('active');
-button.classList.add('active');
-}
-function roll(){
-if(dia<50){alert('ダイヤが足りない！');return}
-dia-=50;document.getElementById('dia').textContent=dia;
-let n=Math.random()<0.006?3+Math.floor(Math.random()*2):Math.floor(Math.random()*3);
-owned.push(n);let c=all[n];
-document.getElementById('result').innerHTML='【'+c.rarity+'】'+c.name+' を獲得！';
-render();
-}
-function render(){
-document.getElementById('cards').innerHTML='';
-owned.forEach((n,i)=>{
-let c=all[n],d=document.createElement('button');
-d.className='card '+c.cls;
-d.innerHTML='<span>'+c.rarity+'</span><span>'+c.name+'</span><span>'+c.type+'</span><span>戦闘力 '+c.power+'</span>';
-d.onclick=()=>{if(team.includes(i)){team=team.filter(x=>x!==i)}else if(team.length<3){team.push(i)}else{alert('編成は3枚まで！')}render()};
-if(team.includes(i))d.style.outline='4px solid #facc15';
-document.getElementById('cards').appendChild(d);
-});
-}
-function battle(){
-if(team.length===0){document.getElementById('log').textContent='カード画面でカードを選んでから開始してな！';return}
-let p=team.reduce((s,i)=>s+all[owned[i]].power,0);
-let enemy=200+Math.floor(Math.random()*600);
-document.getElementById('log').textContent='味方戦闘力 '+p+' ／ 敵戦闘力 '+enemy+' → '+(p>=enemy?'勝利！':'敗北…');
-}
-render();
-</script>
-</body>
-</html>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
+    <title>SDBH アルティメットレプリカ WEB</title>
+    <style>
+        :root {
+            --bg-color: #030712;
+            --container-bg: #111827;
+            --cyan-neon: #06b6d4;
+            --gold-neon: #f59e0b;
+            --red-neon: #ef4444;
+            --purple-neon: #a855f7;
+            --border-color: #374151;
+        }
+
+        body {
+            font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: #f3f4f6;
+            text-align: center;
+            margin: 0;
+            padding: 8px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 全体コンテナ */
+        .game-site-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background-color: var(--container-bg);
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.15);
+            position: relative;
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+        }
+
+        .admin-active-banner {
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ea580c, #f59e0b);
+            padding: 4px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: none;
+            box-shadow: 0 0 8px #f59e0b;
+        }
+
+        /* タイトル文字（ここをタップすれば100%確実に発動するように修正） */
+        .clickable-title {
+            color: var(--cyan-neon);
+            font-size: 1.25rem;
+            margin: 10px 0;
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.6);
+            letter-spacing: 1px;
+            cursor: pointer;
+            padding: 10px;
+            display: block;
+        }
+
+        /* 📱 画面切り替え（タブメニュー） */
+        .site-tabs {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            background-color: #030712;
+            border-radius: 25px;
+            padding: 4px;
+            border: 1px solid #1f2937;
+        }
+
+        .site-tab {
+            padding: 8px 0;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            color: #9ca3af;
+            width: 32%;
+            transition: all 0.2s ease;
+        }
+
+        .site-tab.active {
+            background-color: var(--cyan-neon);
+            color: #030712;
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
+        }
+
+        .game-screen {
+            display: none;
+        }
+
+        .game-screen.active {
+            display: block;
+        }
+
+        /* 💳 ガチャ画面 */
+        .gacha-panel {
+            background-color: #030712;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--cyan-neon);
+            margin: 8px 0;
+            box-shadow: inset 0 0 15px rgba(6, 182, 212, 0.1);
+        }
+
+        .gacha-monitor {
+            width: 100%;
+            height: 120px;
+            background-color: #000;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #1f2937;
+            position: relative;
+        }
+
+        .gacha-effect-text {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #fff;
+            display: none;
+            text-shadow: 0 0 12px #f59e0b;
+        }
+
+        .gacha-card-popup {
+            display: none;
+            width: 70px;
+            height: 100px;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            padding: 4px;
+            box-sizing: border-box;
+            font-weight: bold;
+            border: 2px solid #fff;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        /* 📊 ガチャ確率表 */
+        .probability-card {
+            background-color: #090d16;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 12px;
+            font-size: 0.75rem;
+            text-align: left;
+            border: 1px solid #1f2937;
+        }
+
+        .prob-header {
+            font-weight: bold;
+            color: var(--cyan-neon);
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .prob-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #111827;
+        }
+
+        .prob-row:last-child {
+            border-bottom: none;
+        }
+
+        /* 🎒 デッキ・マイリスト */
+        .deck-counter {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--cyan-neon);
+            margin-bottom: 6px;
+            text-align: left;
+        }
+
+        .collection-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 6px;
+            background-color: rgba(0,0,0,0.4);
+            border-radius: 8px;
+            border: 1px solid #1f2937;
+        }
+
+        .list-card {
+            width: 64px;
+            height: 92px;
+            padding: 4px;
+            font-size: 0.6rem;
+            border-radius: 4px;
+            border: 1px solid #4b5563;
+            font-weight: bold;
+            box-sizing: border-box;
+            opacity: 0.2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.1s ease;
+        }
+
+        .list-card.owned {
+            opacity: 1;
+            cursor: pointer;
+        }
+
+        .list-card.selected {
+            border: 2px solid var(--gold-neon);
+            box-shadow: 0 0 10px var(--gold-neon);
+            transform: scale(1.03);
+        }
+
+        /* ⚔️ バトルステージ */
+        .battle-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-container {
+            display: flex;
+            justify-content: space-between;
+            background-color: #030712;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            margin-bottom: 10px;
+            border: 1px solid #1f2937;
+        }
+
+        .hp-progress-bg {
+            background-color: #374151;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            width: 95px;
+            margin-top: 4px;
+        }
+
+        .hp-progress-fill {
+            height: 100%;
+            background-color: #10b981;
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .enemy-fill {
+            background-color: var(--red-neon);
+        }
+
+        .board {
+            border: 1px dashed var(--cyan-neon);
+            border-radius: 8px;
+            padding: 6px;
+            margin-bottom: 8px;
+            background-color: rgba(6, 182, 212, 0.02);
+        }
+
+        .zone-label {
+            font-size: 0.65rem;
+            color: var(--cyan-neon);
+            font-weight: bold;
+            margin-bottom: 4px;
+            text-align: left;
+            text-transform: uppercase;
+        }
+
+        .battle-grid {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            min-height: 80px;
+            align-items: center;
+        }
+
+        /* 🃏 カード */
+        .game-card {
+            width: 66px;
+            height: 92px;
+            border-radius: 5px;
+            font-size: 0.6rem;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 4px;
+            box-sizing: border-box;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.6);
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .hr { background: linear-gradient(135deg, #ef4444, #7f1d1d); }
+        .el { background: linear-gradient(135deg, #3b82f6, #1e3a8a); }
+        .bs { background: linear-gradient(135deg, #a855f7, #581c87); }
+        .ur-frame { border-color: var(--gold-neon); box-shadow: 0 0 6px var(--gold-neon); }
+        .sec-frame { border-color: #f43f5e; box-shadow: 0 0 12px #fbbf24; animation: sec-glow 1.2s infinite; }
+        
+        @keyframes sec-glow {
+            0% { opacity: 0.9; box-shadow: 0 0 10px #fbbf24; }
+            50% { opacity: 1; box-shadow: 0 0 16px #f43f5e; }
+            100% { opacity: 0.9; box-shadow: 0 0 10px #fbbf24; }
+        }
+
+        /* ⏱️ CIシステム */
+        .ci-panel {
+            background-color: #030712;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: none;
+            border: 1px solid #1f2937;
+        }
+
+        .ci-runner-track {
+            width: 100%;
+            height: 24px;
+            background-color: #1f2937;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .ci-runner-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #10b981 50%, #eab308 80%, #ef4444 95%);
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .ci-perfect-zone {
+
