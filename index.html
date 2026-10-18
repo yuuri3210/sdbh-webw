@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SDBH WEB</title>
+<style>
+body{background:#030712;color:#f3f4f6;font-family:sans-serif;text-align:center;margin:0;padding:12px}
+h1{color:#06b6d4;font-size:22px}
+.tabs{display:flex;justify-content:space-around;background:#111827;padding:8px;border-radius:18px}
+button{cursor:pointer;border:0;border-radius:12px;padding:12px;font-weight:bold}
+.tab{background:#374151;color:white}
+.active{background:#06b6d4;color:#000}
+.screen{display:none;margin-top:18px}
+.screen.active{display:block}
+.btn{background:linear-gradient(135deg,#f59e0b,#d97706);color:white;width:90%;margin:10px}
+.grid{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:15px}
+.card{width:90px;height:125px;border:2px solid white;border-radius:8px;padding:6px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;font-size:13px;font-weight:bold}
+.hr{background:linear-gradient(#ef4444,#7f1d1d)}
+.el{background:linear-gradient(#3b82f6,#1e3a8a)}
+.bs{background:linear-gradient(#a855f7,#581c87)}
+.info{background:#111827;padding:12px;border-radius:12px;margin-top:15px}
+</style>
+</head>
+<body>
+<h1>SUPER DRAGON BALL HEROES</h1>
+<div class="tabs">
+<button class="tab active" onclick="nav('gacha',this)">💳 ガチャ</button>
+<button class="tab" onclick="nav('deck',this)">🎒 カード</button>
+<button class="tab" onclick="nav('battle',this)">⚔️ バトル</button>
+</div>
+<section id="gacha" class="screen active">
+<h3>💎 ダイヤ：<span id="dia">150</span></h3>
+<button class="btn" onclick="roll()">スカウトを引く（💎50）</button>
+<div id="result" class="info">ガチャを引いてカードを集めよう！</div>
+</section>
+<section id="deck" class="screen">
+<h3>🎒 所持カード</h3>
+<div id="cards" class="grid"></div>
+</section>
+<section id="battle" class="screen">
+<h3>⚔️ バトル</h3>
+<div class="info" id="log">カードを集めてバトルしよう！</div>
+<button class="btn" onclick="battle()">バトル開始！</button>
+</section>
+<script>
+const all=[
+{name:"孫悟空",type:"HR",rarity:"C",cls:"hr",power:100},
+{name:"ベジータ",type:"EL",rarity:"C",cls:"el",power:120},
+{name:"トランクス",type:"BS",rarity:"C",cls:"bs",power:110},
+{name:"ベジット",type:"BS",rarity:"SEC",cls:"bs",power:500},
+{name:"ゴジータ",type:"HR",rarity:"SEC",cls:"hr",power:550}
+];
+let dia=150,owned=[],team=[];
+function nav(id,button){
+document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+button.classList.add('active');
+}
+function roll(){
+if(dia<50){alert('ダイヤが足りない！');return}
+dia-=50;document.getElementById('dia').textContent=dia;
+let n=Math.random()<0.006?3+Math.floor(Math.random()*2):Math.floor(Math.random()*3);
+owned.push(n);let c=all[n];
+document.getElementById('result').innerHTML='【'+c.rarity+'】'+c.name+' を獲得！';
+render();
+}
+function render(){
+document.getElementById('cards').innerHTML='';
+owned.forEach((n,i)=>{
+let c=all[n],d=document.createElement('button');
+d.className='card '+c.cls;
+d.innerHTML='<span>'+c.rarity+'</span><span>'+c.name+'</span><span>'+c.type+'</span><span>戦闘力 '+c.power+'</span>';
+d.onclick=()=>{if(team.includes(i)){team=team.filter(x=>x!==i)}else if(team.length<3){team.push(i)}else{alert('編成は3枚まで！')}render()};
+if(team.includes(i))d.style.outline='4px solid #facc15';
+document.getElementById('cards').appendChild(d);
+});
+}
+function battle(){
+if(team.length===0){document.getElementById('log').textContent='カード画面でカードを選んでから開始してな！';return}
+let p=team.reduce((s,i)=>s+all[owned[i]].power,0);
+let enemy=200+Math.floor(Math.random()*600);
+document.getElementById('log').textContent='味方戦闘力 '+p+' ／ 敵戦闘力 '+enemy+' → '+(p>=enemy?'勝利！':'敗北…');
+}
+render();
+</script>
+</body>
+</html>
